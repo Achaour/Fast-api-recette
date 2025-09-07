@@ -1,11 +1,13 @@
-from fastapi.testclient import TestClient
-from app.main import app
+def test_signup_and_login(client):
+    # Signup
+    response = client.post("/auth/signup", json={"email": "a@a.com", "password": "secret"})
+    assert response.status_code == 201
 
-client = TestClient(app)
-
-def test_signup_and_login():
-    r = client.post("/auth/signup", json={"email":"a@a.com","password":"x"})
-    assert r.status_code in (201, 400)  # si relancé, 400 (déjà inscrit)
-    r = client.post("/auth/login", json={"email":"a@a.com","password":"x"})
-    assert r.status_code == 200
-    assert "access_token" in r.json()
+    # Login (⚠️ ici, login attend form-data)
+    response = client.post(
+        "/auth/login",
+        data={"username": "a@a.com", "password": "secret"}  # pas JSON
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
